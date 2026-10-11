@@ -2,13 +2,17 @@
   "expo": {
     "name": "WAVE Messenger",
     "slug": "wave-messenger",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "newArchEnabled": false,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#070A13"
+    },
     "android": {
       "package": "com.wave.messenger",
-      "versionCode": 5,
+      "versionCode": 6,
       "permissions": [
         "android.permission.VIBRATE"
       ]

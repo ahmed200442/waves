@@ -1,6 +1,6 @@
 {
   "name": "wave-messenger",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "private": true,
   "description": "WAVE Messenger native Android neon UI prototype",
   "main": "index.js",

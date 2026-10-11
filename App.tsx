@@ -1,101 +1,53 @@
 import React, { useMemo, useState } from 'react';
-import { SafeAreaView, View, Text, TextInput, Pressable, FlatList, KeyboardAvoidingView, Platform, StyleSheet, StatusBar } from 'react-native';
+import { Alert, FlatList, KeyboardAvoidingView, Platform, Pressable, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 
-type Message = { id: string; text: string; mine: boolean; time: string };
-const initial: Message[] = [
-  { id: '1', text: 'أهلاً بيك في WAVE ✨', mine: false, time: '8:40 م' },
-  { id: '2', text: 'جاهزين نبدأ موجة جديدة؟ 🌊', mine: false, time: '8:41 م' },
-  { id: '3', text: 'يلا بينا! 🚀', mine: true, time: '8:42 م' },
+type Message = { id: string; text: string; mine: boolean; time: string; buzz?: boolean };
+type Seat = { id: number; owner: boolean; mic: boolean };
+const initialMessages: Message[] = [
+ {id:'1',text:'أهلاً بيك في WAVE ✨',mine:false,time:'8:40 م'},
+ {id:'2',text:'جاهزين نبدأ موجة جديدة؟ 🌊',mine:false,time:'8:41 م'},
+ {id:'3',text:'يلا بينا! 🚀',mine:true,time:'8:42 م'},
 ];
+const nav = [{id:'chat',label:'الدردشة',icon:'💬'},{id:'friends',label:'الأصدقاء',icon:'👥'},{id:'rooms',label:'الغرف',icon:'🎙️'},{id:'whispers',label:'فضفضة',icon:'🤫'},{id:'admin',label:'الإدارة',icon:'👑'}] as const;
+type Tab = typeof nav[number]['id'];
 
 export default function App() {
-  const [tab, setTab] = useState('الدردشة');
-  const [draft, setDraft] = useState('');
-  const [messages, setMessages] = useState(initial);
-  const [buzz, setBuzz] = useState(false);
-  const title = useMemo(() => tab === 'الغرف' ? 'غرفتك على الموجة' : tab === 'الأصدقاء' ? 'أصحابك أونلاين' : tab === 'الملف' ? 'ملفك الشخصي' : 'الدردشة', [tab]);
-
-  const send = () => {
-    const text = draft.trim();
-    if (!text) return;
-    setMessages(prev => [...prev, { id: String(Date.now()), text, mine: true, time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) }]);
-    setDraft('');
-  };
-
-  return (
-    <SafeAreaView style={s.safe}>
-      <ExpoStatusBar style="light" />
-      <StatusBar barStyle="light-content" backgroundColor="#070A13" />
-      <View style={s.header}>
-        <View>
-          <Text style={s.brand}>WAVE<Text style={s.dot}>●</Text></Text>
-          <Text style={s.sub}>YOUR PEOPLE. YOUR WAVE.</Text>
-        </View>
-        <View style={s.online}><View style={s.greenDot}/><Text style={s.onlineText}>متصل الآن</Text></View>
-      </View>
-      <View style={s.hero}>
-        <View style={s.heroGlow}/>
-        <Text style={s.eyebrow}>WAVE MESSENGER / 01</Text>
-        <Text style={s.heroTitle}>{title}</Text>
-        <Text style={s.heroSub}>خليك قريب من الناس اللي شبهك</Text>
-      </View>
-      <View style={s.tabs}>
-        {['الدردشة','الأصدقاء','الغرف','الملف'].map(t => (
-          <Pressable key={t} onPress={() => setTab(t)} style={[s.tab, tab === t && s.tabActive]}>
-            <Text style={[s.tabText, tab === t && s.tabTextActive]}>{t}</Text>
-          </Pressable>
-        ))}
-      </View>
-      {tab === 'الدردشة' ? (
-        <KeyboardAvoidingView style={s.chat} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={s.chatHead}>
-            <View style={s.avatar}><Text style={s.avatarText}>W</Text></View>
-            <View style={{flex:1}}><Text style={s.chatName}>Wave Lounge</Text><Text style={s.chatStatus}>●  محادثة تجريبية · 3 رسائل</Text></View>
-            <Pressable style={s.buzz} onPress={() => setBuzz(v => !v)}><Text style={s.buzzText}>{buzz ? 'BUZZ ✓' : '〰 BUZZ'}</Text></Pressable>
-          </View>
-          <FlatList
-            style={s.list}
-            data={messages}
-            keyExtractor={m => m.id}
-            contentContainerStyle={s.messages}
-            renderItem={({item}) => (
-              <View style={[s.messageRow, item.mine && s.mineRow]}>
-                {!item.mine && <View style={s.smallAvatar}><Text style={s.smallAvatarText}>W</Text></View>}
-                <View style={[s.bubble, item.mine ? s.myBubble : s.theirBubble]}>
-                  <Text style={s.messageText}>{item.text}</Text>
-                  <Text style={s.time}>{item.time}</Text>
-                </View>
-              </View>
-            )}
-          />
-          <View style={s.composer}>
-            <TextInput value={draft} onChangeText={setDraft} placeholder="اكتب رسالتك..." placeholderTextColor="#7E879D" style={s.input} onSubmitEditing={send} returnKeyType="send" />
-            <Pressable onPress={send} style={s.send}><Text style={s.sendText}>➤</Text></Pressable>
-          </View>
-        </KeyboardAvoidingView>
-      ) : (
-        <View style={s.placeholder}>
-          <View style={s.placeholderIcon}><Text style={s.placeholderEmoji}>{tab === 'الغرف' ? '🎙️' : tab === 'الأصدقاء' ? '👥' : '✨'}</Text></View>
-          <Text style={s.placeholderTitle}>{tab === 'الغرف' ? 'قريبًا: غرف صوتية' : tab === 'الأصدقاء' ? 'قريبًا: قائمة الأصدقاء' : 'أهلاً بك في WAVE'}</Text>
-          <Text style={s.placeholderText}>دي نسخة أولية من الواجهة. المزامنة بين المستخدمين والصوت المباشر يحتاجان إلى إعداد الخادم وربط الخدمات.</Text>
-          <Pressable style={s.outlineButton} onPress={() => setTab('الدردشة')}><Text style={s.outlineText}>العودة للدردشة</Text></Pressable>
-        </View>
-      )}
-      <View style={s.footer}><Text style={s.footerText}>WAVE  ·  FIND YOUR FREQUENCY</Text><Text style={s.footerVersion}>v1.4.0</Text></View>
-    </SafeAreaView>
-  );
+ const [tab,setTab]=useState<Tab>('chat');
+ const [draft,setDraft]=useState('');
+ const [messages,setMessages]=useState<Message[]>(initialMessages);
+ const [seats,setSeats]=useState<Seat[]>(Array.from({length:8},(_,id)=>({id,owner:id===0,mic:false})));
+ const [confession,setConfession]=useState('');
+ const [confessions,setConfessions]=useState<string[]>([]);
+ const [announcement,setAnnouncement]=useState('مرحباً بك في WAVE — موجتك، ناسك، عالمك ✦');
+ const [announcementDraft,setAnnouncementDraft]=useState('');
+ const [alarm,setAlarm]=useState(false);
+ const title=useMemo(()=>({chat:'محادثة WAVE والـ BUZZ',friends:'أصحابك على الموجة',rooms:'مسرح الصوت',whispers:'جدار الفضفضة',admin:'لوحة الإدارة التجريبية'}[tab]),[tab]);
+ const send=(textOverride?:string,buzz=false)=>{
+  const text=(textOverride??draft).trim(); if(!text)return;
+  setMessages(old=>[...old,{id:String(Date.now()),text,mine:true,time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}),buzz}]);
+  setDraft('');
+ };
+ const publish=()=>{const t=confession.trim();if(!t)return;setConfessions(old=>[t,...old]);setConfession('');Alert.alert('تمت الإضافة','تم حفظ الفضفضة داخل هذه النسخة على الجهاز فقط.');};
+ return <SafeAreaView style={s.safe}>
+  <ExpoStatusBar style="light"/><StatusBar barStyle="light-content" backgroundColor="#070A13"/>
+  <View style={s.header}><View><Text style={s.brand}>WAVE<Text style={s.dot}>●</Text></Text><Text style={s.tagline}>YOUR PEOPLE. YOUR WAVE.</Text></View><View style={s.online}><View style={s.green}/><Text style={s.muted}>نسخة تجريبية</Text></View></View>
+  <View style={s.hero}><Text style={s.eyebrow}>WAVE MESSENGER / NATIVE</Text><Text style={s.heroTitle}>{title}</Text><Text style={s.heroSub}>خليك قريب من الناس اللي شبهك 🌊</Text></View>
+  <View style={s.announcement}><Text style={s.announcementText}>{alarm?'🚨 إنذار تجريبي مفعّل · ':''}{announcement}</Text></View>
+  <View style={s.nav}>{nav.map(n=><Pressable key={n.id} onPress={()=>setTab(n.id)} style={[s.navItem,tab===n.id&&s.navActive]}><Text style={s.navIcon}>{n.icon}</Text><Text style={[s.navText,tab===n.id&&s.navTextActive]}>{n.label}</Text></Pressable>)}</View>
+  {tab==='chat'&&<KeyboardAvoidingView style={s.panel} behavior={Platform.OS==='ios'?'padding':undefined}>
+   <View style={s.chatHeader}><View style={s.avatar}><Text style={s.avatarText}>W</Text></View><View style={s.flex}><Text style={s.sectionTitle}>Wave Lounge</Text><Text style={s.onlineText}>محادثة محلية تجريبية</Text></View><Pressable style={s.buzz} onPress={()=>send('⚡ أرسلت BUZZ!',true)}><Text style={s.buzzText}>〰 BUZZ</Text></Pressable><Pressable style={s.mega} onPress={()=>send('💥 أرسلت MEGA BUZZ!',true)}><Text style={s.megaText}>MEGA</Text></Pressable></View>
+   <FlatList style={s.list} data={messages} keyExtractor={m=>m.id} contentContainerStyle={s.messages} renderItem={({item})=><View style={[s.row,item.mine&&s.rowMine]}><View style={[s.bubble,item.mine?s.mineBubble:s.theirBubble,item.buzz&&s.buzzBubble]}><Text style={s.message}>{item.text}</Text><Text style={s.time}>{item.time}</Text></View></View>}/>
+   <View style={s.composer}><TextInput value={draft} onChangeText={setDraft} onSubmitEditing={()=>send()} returnKeyType="send" placeholder="اكتب رسالتك..." placeholderTextColor="#7E879D" style={s.input}/><Pressable style={s.send} onPress={()=>send()}><Text style={s.sendText}>➤</Text></Pressable></View>
+  </KeyboardAvoidingView>}
+  {tab==='friends'&&<ScrollView style={s.panel} contentContainerStyle={s.scroll}><Text style={s.sectionTitle}>الأصدقاء المقترحون</Text>{[['🌊','موجة جديدة','متصل الآن'],['⚡','صاحبك المفضل','كان متصلاً مؤخراً'],['🎧','رفيق السهر','متصل الآن']].map((f,i)=><View key={i} style={s.friend}><Text style={s.friendIcon}>{f[0]}</Text><View style={s.flex}><Text style={s.friendName}>{f[1]}</Text><Text style={s.muted}>{f[2]}</Text></View><Pressable style={s.outline} onPress={()=>Alert.alert('قائمة تجريبية','إضافة الأصدقاء الفعلية تحتاج خادماً وحسابات مستخدمين.') }><Text style={s.outlineText}>عرض</Text></Pressable></View>)}<Text style={s.note}>هذه بيانات عرض وليست حسابات أعضاء حقيقية.</Text></ScrollView>}
+  {tab==='rooms'&&<ScrollView style={s.panel} contentContainerStyle={s.scroll}><Text style={s.sectionTitle}>🎙️ غرفة WAVE LIVE · ٨ مقاعد</Text><Text style={s.muted}>اضغط مقعداً فارغاً للجلوس، واضغط مقعدك لتبديل المايك.</Text><View style={s.seats}>{seats.map(seat=><Pressable key={seat.id} style={[s.seat,seat.owner&&s.seatTaken,seat.owner&&seat.mic&&s.seatSpeaking]} onPress={()=>setSeats(old=>old.map(x=>x.id===seat.id?(!x.owner?{...x,owner:true,mic:false}:{...x,mic:!x.mic}):x))} onLongPress={()=>seat.owner&&setSeats(old=>old.map(x=>x.id===seat.id?{...x,owner:false,mic:false}:x))}><Text style={s.seatIcon}>{seat.owner?(seat.mic?'🔊':'🎙️'):'🪑'}</Text><Text style={s.seatName}>{seat.owner?'أنت':'مقعد '+(seat.id+1)}</Text><Text style={s.seatStatus}>{seat.owner?(seat.mic?'الميك يعمل':'الميك مكتوم'):'اضغط للجلوس'}</Text></Pressable>)}</View><Text style={s.note}>مهم: هذه محاكاة للمقاعد والمايك فقط؛ لا يوجد بث صوتي حي بين الأجهزة في النسخة الحالية.</Text></ScrollView>}
+  {tab==='whispers'&&<ScrollView style={s.panel} contentContainerStyle={s.scroll}><Text style={s.sectionTitle}>🤫 فضفضة بدون اسم</Text><Text style={s.muted}>شارك ما بداخلك. لا تكتب بيانات شخصية حساسة.</Text><TextInput multiline value={confession} onChangeText={setConfession} placeholder="اكتب فضفضتك هنا..." placeholderTextColor="#7E879D" style={s.textArea}/><Pressable style={s.primary} onPress={publish}><Text style={s.primaryText}>نشر الفضفضة 💌</Text></Pressable>{confessions.map((c,i)=><View key={i} style={s.confession}><Text style={s.anon}>عضوية مجهولة #{String(i+1001)}</Text><Text style={s.message}>{c}</Text></View>)}{!confessions.length&&<Text style={s.empty}>المساحة هادئة الآن 💌</Text>}<Text style={s.note}>المنشورات محفوظة محلياً داخل الذاكرة فقط ولا تتم مزامنتها بين الأجهزة.</Text></ScrollView>}
+  {tab==='admin'&&<ScrollView style={s.panel} contentContainerStyle={s.scroll}><Text style={s.adminTitle}>👑 إدارة تجريبية</Text><Text style={s.muted}>هذه الشاشة ليست محمية بتسجيل دخول إداري، لذلك لا تستخدمها لإدارة بيانات حقيقية.</Text><Text style={s.label}>إعلان داخل التطبيق</Text><TextInput value={announcementDraft} onChangeText={setAnnouncementDraft} placeholder="اكتب الإعلان..." placeholderTextColor="#7E879D" style={s.input}/><Pressable style={s.primary} onPress={()=>{if(announcementDraft.trim()){setAnnouncement('📢 '+announcementDraft.trim());setAnnouncementDraft('');Alert.alert('تم','تم تحديث الإعلان على هذا الجهاز فقط.');}}}><Text style={s.primaryText}>تحديث الإعلان 📢</Text></Pressable><Pressable style={[s.primary,s.danger]} onPress={()=>setAlarm(v=>!v)}><Text style={s.primaryText}>{alarm?'إيقاف إنذار العرض':'تشغيل إنذار العرض 🚨'}</Text></Pressable><View style={s.stats}><Text style={s.stat}>{messages.length} رسالة</Text><Text style={s.stat}>{seats.filter(x=>x.owner).length} مقعد مشغول</Text><Text style={s.stat}>{confessions.length} فضفضة</Text></View></ScrollView>}
+  <View style={s.footer}><Text style={s.footerText}>WAVE · FIND YOUR FREQUENCY</Text><Text style={s.footerText}>v1.5.0</Text></View>
+ </SafeAreaView>;
 }
 
-const s = StyleSheet.create({
- safe:{flex:1,backgroundColor:'#070A13'},header:{paddingHorizontal:20,paddingTop:12,paddingBottom:16,flexDirection:'row',alignItems:'center',justifyContent:'space-between'},
- brand:{fontSize:29,fontWeight:'900',letterSpacing:3,color:'#F7FAFF'},dot:{color:'#B14CFF',fontSize:16},sub:{fontSize:8,letterSpacing:2,color:'#78839D',marginTop:1},
- online:{flexDirection:'row',alignItems:'center',gap:7,borderWidth:1,borderColor:'#253D42',borderRadius:20,paddingHorizontal:10,paddingVertical:7},greenDot:{width:7,height:7,borderRadius:4,backgroundColor:'#48F0B2'},onlineText:{color:'#A7B4C9',fontSize:11},
- hero:{marginHorizontal:16,padding:18,borderRadius:20,backgroundColor:'#11162A',borderWidth:1,borderColor:'#2D2855',overflow:'hidden'},heroGlow:{position:'absolute',right:-30,top:-40,width:150,height:150,borderRadius:100,backgroundColor:'#3B1D70',opacity:.4},eyebrow:{fontSize:9,letterSpacing:2,color:'#B58CFF',fontWeight:'700'},heroTitle:{fontSize:25,fontWeight:'800',color:'#F7F8FF',marginTop:9},heroSub:{fontSize:12,color:'#98A2BC',marginTop:5},
- tabs:{flexDirection:'row',marginHorizontal:16,marginTop:14,marginBottom:8,padding:4,backgroundColor:'#0E1220',borderRadius:14},tab:{flex:1,alignItems:'center',paddingVertical:10,borderRadius:11},tabActive:{backgroundColor:'#292044',borderWidth:1,borderColor:'#5B3A86'},tabText:{fontSize:11,color:'#8993AB'},tabTextActive:{color:'#E6D7FF',fontWeight:'800'},
- chat:{flex:1,marginHorizontal:16,marginTop:6,backgroundColor:'#0D1120',borderRadius:18,borderWidth:1,borderColor:'#20283B',overflow:'hidden'},chatHead:{flexDirection:'row',alignItems:'center',padding:13,borderBottomWidth:1,borderBottomColor:'#222A3D',gap:10},avatar:{width:40,height:40,borderRadius:14,backgroundColor:'#432A68',alignItems:'center',justifyContent:'center',borderWidth:1,borderColor:'#9A64DE'},avatarText:{color:'#F5E9FF',fontWeight:'900',fontSize:19},chatName:{color:'#F1F4FF',fontWeight:'800',fontSize:14},chatStatus:{color:'#48DDB0',fontSize:10,marginTop:3},buzz:{borderWidth:1,borderColor:'#7148A5',borderRadius:10,paddingHorizontal:10,paddingVertical:8},buzzText:{color:'#D7B9FF',fontSize:10,fontWeight:'800'},
- list:{flex:1},messages:{padding:12,gap:12},messageRow:{flexDirection:'row',alignItems:'flex-end',gap:7},mineRow:{justifyContent:'flex-end'},smallAvatar:{width:25,height:25,borderRadius:9,backgroundColor:'#3A2959',alignItems:'center',justifyContent:'center'},smallAvatarText:{color:'#E9D9FF',fontSize:10,fontWeight:'900'},bubble:{maxWidth:'82%',paddingHorizontal:12,paddingVertical:9,borderRadius:15},theirBubble:{backgroundColor:'#171E30',borderBottomLeftRadius:4,borderWidth:1,borderColor:'#26314A'},myBubble:{backgroundColor:'#33234D',borderBottomRightRadius:4,borderWidth:1,borderColor:'#6B3D91'},messageText:{fontSize:13,color:'#F2F4FC',lineHeight:20},time:{fontSize:9,color:'#929CB3',textAlign:'right',marginTop:4},
- composer:{flexDirection:'row',alignItems:'center',padding:10,gap:8,borderTopWidth:1,borderTopColor:'#222A3D'},input:{flex:1,backgroundColor:'#151B2B',borderRadius:13,paddingHorizontal:13,paddingVertical:11,color:'#FFFFFF',fontSize:13,textAlign:'right'},send:{width:43,height:43,borderRadius:13,backgroundColor:'#9A4DDF',alignItems:'center',justifyContent:'center'},sendText:{fontSize:21,color:'#FFFFFF',fontWeight:'900'},
- placeholder:{flex:1,alignItems:'center',justifyContent:'center',paddingHorizontal:30},placeholderIcon:{width:76,height:76,borderRadius:24,backgroundColor:'#211936',alignItems:'center',justifyContent:'center',borderWidth:1,borderColor:'#593A7B'},placeholderEmoji:{fontSize:32},placeholderTitle:{fontSize:20,fontWeight:'800',color:'#F4F4FF',marginTop:18},placeholderText:{fontSize:13,color:'#98A2BC',textAlign:'center',lineHeight:22,marginTop:9},outlineButton:{marginTop:20,borderWidth:1,borderColor:'#8C52C5',borderRadius:12,paddingHorizontal:18,paddingVertical:11},outlineText:{color:'#D8B7FF',fontWeight:'700'},
- footer:{paddingHorizontal:20,paddingVertical:10,flexDirection:'row',justifyContent:'space-between'},footerText:{fontSize:8,color:'#59647E',letterSpacing:1.5},footerVersion:{fontSize:9,color:'#6B7590'}
+const s=StyleSheet.create({
+ safe:{flex:1,backgroundColor:'#070A13'},header:{paddingHorizontal:18,paddingTop:7,paddingBottom:10,flexDirection:'row',alignItems:'center',justifyContent:'space-between'},brand:{fontSize:27,fontWeight:'900',letterSpacing:3,color:'#F7FAFF'},dot:{color:'#B14CFF',fontSize:14},tagline:{fontSize:8,letterSpacing:2,color:'#78839D',marginTop:1},online:{flexDirection:'row',alignItems:'center',gap:6,borderWidth:1,borderColor:'#253D42',borderRadius:20,padding:7},green:{width:6,height:6,borderRadius:4,backgroundColor:'#48F0B2'},muted:{color:'#929CB3',fontSize:10,marginTop:3},hero:{marginHorizontal:13,padding:14,borderRadius:18,backgroundColor:'#11162A',borderWidth:1,borderColor:'#2D2855'},eyebrow:{fontSize:8,letterSpacing:2,color:'#B58CFF',fontWeight:'700'},heroTitle:{fontSize:20,fontWeight:'800',color:'#F7F8FF',marginTop:7},heroSub:{fontSize:11,color:'#98A2BC',marginTop:4},announcement:{marginHorizontal:13,marginTop:7,padding:8,backgroundColor:'#20163A',borderRadius:9,borderWidth:1,borderColor:'#513275'},announcementText:{fontSize:10,color:'#DCCBFF'},nav:{flexDirection:'row',marginHorizontal:9,marginVertical:8,padding:3,backgroundColor:'#0E1220',borderRadius:12},navItem:{flex:1,alignItems:'center',paddingVertical:5,borderRadius:9},navActive:{backgroundColor:'#292044',borderWidth:1,borderColor:'#5B3A86'},navIcon:{fontSize:14},navText:{fontSize:8,color:'#8993AB',marginTop:2},navTextActive:{color:'#E6D7FF',fontWeight:'800'},panel:{flex:1,marginHorizontal:11,backgroundColor:'#0D1120',borderRadius:16,borderWidth:1,borderColor:'#20283B',overflow:'hidden'},scroll:{padding:12,paddingBottom:22},chatHeader:{flexDirection:'row',alignItems:'center',padding:9,borderBottomWidth:1,borderBottomColor:'#222A3D',gap:7},avatar:{width:35,height:35,borderRadius:12,backgroundColor:'#432A68',alignItems:'center',justifyContent:'center'},avatarText:{color:'#F5E9FF',fontWeight:'900',fontSize:18},flex:{flex:1},sectionTitle:{color:'#F1F4FF',fontWeight:'800',fontSize:14},onlineText:{color:'#48DDB0',fontSize:9,marginTop:3},buzz:{borderWidth:1,borderColor:'#7148A5',borderRadius:8,paddingHorizontal:7,paddingVertical:7},buzzText:{color:'#D7B9FF',fontSize:8,fontWeight:'800'},mega:{backgroundColor:'#692B3C',borderRadius:8,paddingHorizontal:7,paddingVertical:7},megaText:{color:'#FFD9DE',fontSize:8,fontWeight:'900'},list:{flex:1},messages:{padding:10,gap:9},row:{flexDirection:'row'},rowMine:{justifyContent:'flex-end'},bubble:{maxWidth:'88%',paddingHorizontal:11,paddingVertical:8,borderRadius:13},mineBubble:{backgroundColor:'#33234D',borderBottomRightRadius:4,borderWidth:1,borderColor:'#6B3D91'},theirBubble:{backgroundColor:'#171E30',borderBottomLeftRadius:4,borderWidth:1,borderColor:'#26314A'},buzzBubble:{backgroundColor:'#501B4B',borderColor:'#B93E9B'},message:{fontSize:12,color:'#F2F4FC',lineHeight:19},time:{fontSize:8,color:'#929CB3',textAlign:'right',marginTop:3},composer:{flexDirection:'row',alignItems:'center',padding:8,gap:7,borderTopWidth:1,borderTopColor:'#222A3D'},input:{flex:1,backgroundColor:'#151B2B',borderRadius:11,paddingHorizontal:11,paddingVertical:9,color:'#FFFFFF',fontSize:12,textAlign:'right'},send:{width:39,height:39,borderRadius:11,backgroundColor:'#9A4DDF',alignItems:'center',justifyContent:'center'},sendText:{fontSize:20,color:'#FFFFFF',fontWeight:'900'},friend:{flexDirection:'row',alignItems:'center',gap:10,padding:11,marginTop:10,backgroundColor:'#151B2B',borderRadius:13,borderWidth:1,borderColor:'#252D43'},friendIcon:{fontSize:23,width:40,textAlign:'center'},friendName:{fontSize:12,color:'#F2F4FC',fontWeight:'800'},outline:{borderWidth:1,borderColor:'#7148A5',borderRadius:8,paddingHorizontal:10,paddingVertical:6},outlineText:{fontSize:9,color:'#D7B9FF',fontWeight:'700'},note:{marginTop:13,padding:10,borderRadius:11,backgroundColor:'#17182A',borderWidth:1,borderColor:'#383052',color:'#B5B6D0',fontSize:10,lineHeight:17},seats:{flexDirection:'row',flexWrap:'wrap',justifyContent:'space-between',marginVertical:12},seat:{width:'23.5%',minHeight:78,alignItems:'center',justifyContent:'center',backgroundColor:'#090E18',borderWidth:1,borderColor:'#273044',borderRadius:11,padding:4,marginBottom:7},seatTaken:{backgroundColor:'#152637',borderColor:'#3D8E9C'},seatSpeaking:{backgroundColor:'#17372F',borderColor:'#48DDB0'},seatIcon:{fontSize:19},seatName:{fontSize:9,color:'#E8ECF8',fontWeight:'800',marginTop:3},seatStatus:{fontSize:7,color:'#98A2BC',marginTop:3,textAlign:'center'},textArea:{minHeight:100,textAlignVertical:'top',backgroundColor:'#090E18',borderWidth:1,borderColor:'#31344C',borderRadius:11,padding:11,color:'#F7F8FF',fontSize:13,marginTop:12},primary:{backgroundColor:'#8447C7',borderRadius:11,padding:11,alignItems:'center',marginTop:10},primaryText:{color:'#FFFFFF',fontSize:11,fontWeight:'900'},confession:{padding:11,backgroundColor:'#151B2B',borderRadius:12,borderWidth:1,borderColor:'#292D45',marginTop:10},anon:{fontSize:10,color:'#C7A1FF',fontWeight:'800',marginBottom:7},empty:{textAlign:'center',color:'#929CB3',padding:20},adminTitle:{fontSize:16,fontWeight:'900',color:'#FFC978'},label:{color:'#D8B7FF',fontSize:11,fontWeight:'800',marginTop:15,marginBottom:5},danger:{backgroundColor:'#9D3047'},stats:{marginTop:14,gap:7},stat:{color:'#D8B7FF',backgroundColor:'#151B2B',borderRadius:9,padding:10,fontSize:11},footer:{paddingHorizontal:17,paddingVertical:6,flexDirection:'row',justifyContent:'space-between'},footerText:{fontSize:8,color:'#59647E',letterSpacing:1}
 });

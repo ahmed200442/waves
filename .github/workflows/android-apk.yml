@@ -20,14 +20,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Restore source archive
-        run: |
-          test -f source/WAVE-source.tar.gz.b64
-          base64 --decode source/WAVE-source.tar.gz.b64 > /tmp/wave-source.tar.gz
-          tar -tzf /tmp/wave-source.tar.gz
-          tar -xzf /tmp/wave-source.tar.gz -C .
-          rm -rf source
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -41,9 +33,6 @@ jobs:
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps --no-audit --no-fund --fetch-retries=3 --fetch-timeout=120000
-
-      - name: Verify source
-        run: node scripts/verify-source.mjs
 
       - name: Validate Expo config
         run: npx expo config --type public

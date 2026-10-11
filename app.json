@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "WAVE Messenger",
+    "slug": "wave-messenger",
+    "version": "1.4.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": false,
+    "android": {
+      "package": "com.wave.messenger",
+      "versionCode": 5,
+      "permissions": [
+        "android.permission.VIBRATE"
+      ]
+    },
+    "extra": {
+      "supportsRTL": true
+    }
+  }
+}

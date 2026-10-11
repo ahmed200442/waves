@@ -1,5 +1,9 @@
 # WAVE Messenger
 
-Android messenger starter. Source archive and automated APK build workflow are being set up in the `main` branch.
+WAVE is an Android-first neon messenger prototype built with Expo and React Native.
 
-The APK is not considered ready until the GitHub Actions build succeeds.
+## Build APK
+A GitHub Actions workflow builds a release APK on pushes to `main` and through manual workflow dispatch. After a successful run, download `WAVE-Messenger-APK` from the workflow's Artifacts.
+
+## Current scope
+This repository currently provides a native UI prototype with local demo messages. Real multi-user messaging, Supabase persistence, voice rooms, push notifications, and production moderation must be integrated and tested before public release.

@@ -22,17 +22,16 @@ jobs:
 
       - name: Restore source archive
         run: |
-          test -f source/WAVE-source.zip.b64
-          base64 --decode source/WAVE-source.zip.b64 > /tmp/wave-source.zip
-          unzip -t /tmp/wave-source.zip
-          unzip -o /tmp/wave-source.zip -d .
+          test -f source/WAVE-source.tar.gz.b64
+          base64 --decode source/WAVE-source.tar.gz.b64 > /tmp/wave-source.tar.gz
+          tar -tzf /tmp/wave-source.tar.gz
+          tar -xzf /tmp/wave-source.tar.gz -C .
           rm -rf source
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
